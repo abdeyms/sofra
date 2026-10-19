@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f0">
+  <title>Sofra | Stol bandlovlari</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Sofra bosh sahifa">
+        <span class="brand-mark">S</span>
+        <span><span class="brand-name">SOFRA</span><span class="brand-caption">RESTORAN BOSHQARUVI</span></span>
+      </a>
+      <div class="top-actions">
+        <span class="connection"><span class="connection-dot"></span>Tizim faol</span>
+        <span class="user-badge" aria-label="Administrator">SA</span>
+      </div>
+    </header>
+
+    <section id="top" class="page-heading">
+      <div>
+        <p class="eyebrow">Boshqaruv paneli</p>
+        <h1>Stollar va bandlovlar</h1>
+        <p class="heading-note">Restorandagi bandlovlarni shu yerdan boshqaring.</p>
+      </div>
+      <div class="today-label" id="today-label">Bugun</div>
+    </section>
+
+    <section class="overview" aria-label="Kunlik ko‘rsatkichlar">
+      <div class="metric" style="--metric-color:#284f3b">
+        <div class="metric-label">Faol bandlovlar</div>
+        <div class="metric-value"><span id="metric-bookings" class="skeleton">—</span><span class="metric-unit">ta</span></div>
+      </div>
+      <div class="metric" style="--metric-color:#a4c64d">
+        <div class="metric-label">Bo‘sh stollar</div>
+        <div class="metric-value"><span id="metric-tables" class="skeleton">—</span><span class="metric-unit">ta</span></div>
+      </div>
+      <div class="metric" style="--metric-color:#59788d">
+        <div class="metric-label">Kutilayotgan mehmonlar</div>
+        <div class="metric-value"><span id="metric-guests" class="skeleton">—</span><span class="metric-unit">kishi</span></div>
+      </div>
+      <div class="photo-note">
+        <span class="spark" aria-hidden="true">✳</span>
+        <div class="photo-note-copy">
+          <p class="photo-note-title">Bugungi xizmat</p>
+          <p class="photo-note-subtitle" id="service-date">Yangi kun, yangi mehmonlar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel" id="tables" aria-labelledby="tables-heading">
+        <div class="section-head">
+          <div><h2 id="tables-heading">Stollar holati</h2><p>Vaqt va mehmonlar soniga mos stolni tanlang.</p></div>
+        </div>
+        <div class="availability-toolbar">
+          <div class="field"><label for="booking-date">Sana</label><input id="booking-date" type="date" required></div>
+          <div class="field"><label for="booking-time">Kelish vaqti</label><input id="booking-time" type="time" value="19:00" required></div>
+          <div class="field"><label for="party-size">Mehmonlar soni</label><select id="party-size"><option value="1">1 kishi</option><option value="2" selected>2 kishi</option><option value="3">3 kishi</option><option value="4">4 kishi</option><option value="5">5 kishi</option><option value="6">6 kishi</option><option value="7">7 kishi</option><option value="8">8 kishi</option></select></div>
+          <div class="field"><label for="duration">Davomiyligi</label><select id="duration"><option value="60">1 soat</option><option value="90" selected>1,5 soat</option><option value="120">2 soat</option><option value="180">3 soat</option></select></div>
+        </div>
+        <div class="room-heading">
+          <div class="room-landmarks" aria-label="Xona yo‘nalishlari">
+            <span><i class="landmark-dot window-dot"></i>Deraza tomoni</span>
+            <span><i class="landmark-dot music-dot"></i>Musiqachilar</span>
+          </div>
+          <button id="room-reset" class="room-reset" type="button" title="Ko‘rinishni tiklash">Ko‘rinishni tiklash</button>
+        </div>
+        <div id="room-scene" class="room-scene" role="img" aria-label="Restoran xonasining interaktiv uch o‘lchamli ko‘rinishi">
+          <div id="room-status" class="room-status">3D xona yuklanmoqda...</div>
+        </div>
+        <p class="room-help">Stolni xonadan yoki pastdagi ro‘yxatdan tanlang. Xonani aylantirish uchun sudrang.</p>
+        <div id="table-grid" class="table-grid" aria-live="polite"><div class="empty-tables">Stollar yuklanmoqda...</div></div>
+        <div class="table-help">
+          <span class="legend"><span class="legend-dot"></span>Bo‘sh</span>
+          <span class="legend"><span class="legend-dot red"></span>Band</span>
+          <span class="legend"><span class="legend-dot gray"></span>Sig‘imi mos emas</span>
+        </div>
+      </section>
+
+      <aside class="panel booking-panel" aria-labelledby="form-heading">
+        <div class="section-head">
+          <div><h2 id="form-heading">Yangi bandlov</h2><p>Mehmon ma’lumotlarini kiriting.</p></div>
+        </div>
+        <form id="booking-form">
+          <div class="form-grid">
+            <div class="field wide"><label for="customer-name">Mehmonning ism-familiyasi</label><input id="customer-name" name="customer_name" type="text" placeholder="Masalan, Ali Valiyev" minlength="2" maxlength="100" autocomplete="name" required></div>
+            <div class="field wide"><label for="phone">Telefon raqami</label><input id="phone" name="phone" type="tel" placeholder="+998 90 123 45 67" minlength="7" maxlength="25" autocomplete="tel" required></div>
+          </div>
+          <div id="selection-note" class="selection-note"><span>Tanlangan stol</span><strong id="selected-table-label">Stol tanlanmagan</strong></div>
+          <button id="submit-booking" class="primary-button" type="submit" disabled>Bandlovni tasdiqlash</button>
+          <p id="form-message" class="inline-message" role="status"></p>
+        </form>
+      </aside>
+    </section>
+
+    <section class="bookings-section" id="bookings" aria-labelledby="bookings-heading">
+      <div class="bookings-header">
+        <div><h2 id="bookings-heading">Bandlovlar ro‘yxati</h2><p id="booking-count-label">Tanlangan sana bo‘yicha bandlovlar</p></div>
+        <span class="date-chip" id="list-date-chip">—</span>
+      </div>
+      <div id="booking-list" class="booking-list" aria-live="polite"><div class="list-empty">Bandlovlar yuklanmoqda...</div></div>
+    </section>
+
+    <footer class="footer"><span>SOFRA · Restoran boshqaruvi</span><span>Bandlovlar xavfsiz saqlanadi</span></footer>
+  </main>
+
+  <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
+  <script src="room.js"></script>
+  <script>
+    const dateInput = document.querySelector("#booking-date");
+    const timeInput = document.querySelector("#booking-time");
+    const partyInput = document.querySelector("#party-size");
+    const durationInput = document.querySelector("#duration");
+    const tableGrid = document.querySelector("#table-grid");
+    const bookingList = document.querySelector("#booking-list");
+    const form = document.querySelector("#booking-form");
+    const submitButton = document.querySelector("#submit-booking");
+    const message = document.querySelector("#form-message");
+    const apiBaseUrl = ["localhost", "127.0.0.1"].includes(location.hostname) && location.port !== "8000"
+      ? `${location.protocol}//${location.hostname}:8000`
+      : "";
+    let selectedTableId = null;
+    let tables = [];
+    let currentAvailableTables = [];
+    let refreshTimer;
+
+    const dateString = (value, includeWeekday = false) => {
+      const [year, month, day] = value.split("-").map(Number);
+      const months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"];
+      const weekdays = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
+      const weekday = new Date(year, month - 1, day).getDay();
+      return `${includeWeekday ? `${weekdays[weekday]}, ` : ""}${day}-${months[month - 1]} ${year}`;
+    };
+
+    function setInitialDateTime() {
+      const now = new Date();
+      const initial = new Date(now);
+      initial.setMinutes(Math.ceil((now.getMinutes() + 1) / 30) * 30, 0, 0);
+      const openingMinutes = 11 * 60;
+      const latestStartMinutes = 22 * 60 - Number(durationInput.value);
+      const startMinutes = initial.getHours() * 60 + initial.getMinutes();
+      if (startMinutes < openingMinutes) {
+        initial.setHours(11, 0, 0, 0);
+      } else if (startMinutes > latestStartMinutes) {
+        initial.setDate(initial.getDate() + 1);
+        initial.setHours(11, 0, 0, 0);
+      }
+      dateInput.value = `${initial.getFullYear()}-${String(initial.getMonth() + 1).padStart(2, "0")}-${String(initial.getDate()).padStart(2, "0")}`;
+      timeInput.value = `${String(initial.getHours()).padStart(2, "0")}:${String(initial.getMinutes()).padStart(2, "0")}`;
+      dateInput.min = dateInput.value;
+      document.querySelector("#today-label").textContent = `Bugun · ${dateString(dateInput.value, true)}`;
+      document.querySelector("#service-date").textContent = `${dateString(dateInput.value)} uchun bandlovlar`;
+    }
+
+    async function api(path, options = {}) {
+      let response;
+      try {
+        response = await fetch(`${apiBaseUrl}${path}`, { headers: { "Content-Type": "application/json", ...options.headers }, ...options });
+      } catch {
+        throw new Error("Python serveriga ulanib bo‘lmadi. Terminalda `python kursishi.py` ni ishga tushiring.");
+      }
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        const detail = body?.detail;
+        const errorText = Array.isArray(detail) ? detail.map((item) => item.msg).join("; ") : detail;
+        throw new Error(errorText || "So‘rov bajarilmadi. Ma’lumotlarni tekshirib, qayta urinib ko‘ring.");
+      }
+      return response.status === 204 ? null : response.json();
+    }
+
+    function availabilityQuery() {
+      return new URLSearchParams({
+        booking_date: dateInput.value,
+        start_time: timeInput.value,
+        party_size: partyInput.value,
+        duration_minutes: durationInput.value
+      });
+    }
+
+    function showMessage(text, kind) {
+      message.textContent = text;
+      message.className = `inline-message show ${kind}`;
+    }
+
+    function tableLocation(table) {
+      if (["T1", "T2"].includes(table.name)) return "Deraza tomoni";
+      if (["T5", "T6"].includes(table.name)) return "Musiqachilar tomoni";
+      return "Zal markazi";
+    }
+
+    function selectTable(tableId) {
+      const table = tables.find((item) => item.id === tableId);
+      if (!table || table.seats < Number(partyInput.value) || !currentAvailableTables.some((item) => item.id === tableId)) return;
+      selectedTableId = tableId;
+      document.querySelector("#selected-table-label").textContent = `${table.name} · ${tableLocation(table)}`;
+      submitButton.disabled = false;
+      renderTables(currentAvailableTables);
+    }
+
+    function renderTables(availableTables) {
+      currentAvailableTables = availableTables;
+      window.updateRoomTables?.(tables, currentAvailableTables, selectedTableId, Number(partyInput.value));
+      const availableIds = new Set(availableTables.map((table) => table.id));
+      const partySize = Number(partyInput.value);
+      if (!tables.length) {
+        tableGrid.innerHTML = '<div class="empty-tables">Hozircha stollar qo‘shilmagan.</div>';
+        return;
+      }
+      tableGrid.innerHTML = tables.map((table) => {
+        const fits = table.seats >= partySize;
+        const available = availableIds.has(table.id);
+        const state = !fits ? "Sig‘imi mos emas" : available ? "Bo‘sh" : "Band";
+        const classes = ["table-card", !fits ? "small" : !available ? "busy" : "", selectedTableId === table.id ? "selected" : ""].filter(Boolean).join(" ");
+        return `<button class="${classes}" type="button" data-table-id="${table.id}" ${!fits || !available ? "disabled" : ""} aria-pressed="${selectedTableId === table.id}">
+          <span class="table-top"><span class="table-name">${escapeHtml(table.name)}</span><span class="table-shape" aria-hidden="true"></span></span>
+          <span class="table-seats">${table.seats} kishilik</span><span class="table-location">${tableLocation(table)}</span><span class="table-state">${state}</span>
+        </button>`;
+      }).join("");
+      tableGrid.querySelectorAll("[data-table-id]").forEach((button) => {
+        button.addEventListener("click", () => selectTable(Number(button.dataset.tableId)));
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    }
+
+    async function refreshAvailability() {
+      if (!dateInput.value || !timeInput.value) return;
+      try {
+        const [allTables, availability] = await Promise.all([
+          api("/tables"),
+          api(`/availability?${availabilityQuery()}`)
+        ]);
+        tables = allTables;
+        if (selectedTableId && !availability.tables.some((table) => table.id === selectedTableId)) {
+          selectedTableId = null;
+          document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
+          submitButton.disabled = true;
+        }
+        renderTables(availability.tables);
+        document.querySelector("#metric-tables").textContent = availability.tables.length;
+        document.querySelector("#metric-tables").classList.remove("skeleton");
+      } catch (error) {
+        window.setRoomStatus?.(error.message);
+        tableGrid.innerHTML = `<div class="empty-tables">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function scheduleAvailabilityRefresh() {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(async () => {
+        selectedTableId = null;
+        document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
+        submitButton.disabled = true;
+        await refreshAvailability();
+      }, 180);
+    }
+
+    async function refreshBookings() {
+      const selectedDate = dateInput.value;
+      document.querySelector("#list-date-chip").textContent = dateString(selectedDate);
+      document.querySelector("#service-date").textContent = `${dateString(selectedDate)} uchun bandlovlar`;
+      try {
+        const dayBookings = await api(`/bookings?booking_date=${encodeURIComponent(selectedDate)}`);
+        const activeToday = dayBookings.filter((booking) => booking.status === "confirmed");
+        document.querySelector("#metric-bookings").textContent = activeToday.length;
+        document.querySelector("#metric-bookings").classList.remove("skeleton");
+        document.querySelector("#metric-guests").textContent = activeToday.reduce((total, booking) => total + booking.party_size, 0);
+        document.querySelector("#metric-guests").classList.remove("skeleton");
+        document.querySelector("#booking-count-label").textContent = `${dayBookings.length} ta bandlov · ${activeToday.length} tasi faol`;
+        renderBookings(dayBookings);
+      } catch (error) {
+        bookingList.innerHTML = `<div class="list-empty">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function renderBookings(bookings) {
+      if (!bookings.length) {
+        bookingList.innerHTML = '<div class="list-empty">Bu sana uchun bandlovlar yo‘q.</div>';
+        return;
+      }
+      bookingList.innerHTML = bookings.map((booking) => {
+        const cancelled = booking.status === "cancelled";
+        return `<article class="booking-row">
+          <span class="booking-table">${escapeHtml(booking.table_name)}</span>
+          <span class="booking-person"><strong>${escapeHtml(booking.customer_name)}</strong><small class="booking-phone">${escapeHtml(booking.phone)}</small></span>
+          <span><strong class="booking-time">${escapeHtml(booking.start_time.slice(0, 5))}</strong><small class="booking-detail">${escapeHtml(booking.end_time.slice(0, 5))} gacha</small></span>
+          <span class="booking-detail booking-size">${booking.party_size} mehmon</span>
+          <span class="status-pill ${cancelled ? "cancelled" : ""}">${cancelled ? "Bekor qilingan" : "Tasdiqlangan"}</span>
+          <button class="cancel-button" type="button" data-cancel-id="${booking.id}" ${cancelled ? "disabled" : ""}>Bekor qilish</button>
+        </article>`;
+      }).join("");
+      bookingList.querySelectorAll("[data-cancel-id]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          if (!confirm("Ushbu bandlovni bekor qilmoqchimisiz?")) return;
+          button.disabled = true;
+          try {
+            await api(`/bookings/${button.dataset.cancelId}`, { method: "DELETE" });
+            selectedTableId = null;
+            document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
+            submitButton.disabled = true;
+            await Promise.all([refreshBookings(), refreshAvailability()]);
+          } catch (error) {
+            button.disabled = false;
+            showMessage(error.message, "error");
+          }
+        });
+      });
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!selectedTableId) return;
+      submitButton.disabled = true;
+      submitButton.textContent = "Saqlanmoqda...";
+      message.className = "inline-message";
+      const payload = {
+        table_id: selectedTableId,
+        customer_name: document.querySelector("#customer-name").value.trim(),
+        phone: document.querySelector("#phone").value.trim(),
+        party_size: Number(partyInput.value),
+        booking_date: dateInput.value,
+        start_time: timeInput.value,
+        duration_minutes: Number(durationInput.value)
+      };
+      try {
+        const booking = await api("/bookings", { method: "POST", body: JSON.stringify(payload) });
+        showMessage(`${booking.customer_name} uchun ${booking.table_name} stoli band qilindi.`, "success");
+        form.reset();
+        document.querySelector("#customer-name").value = "";
+        document.querySelector("#phone").value = "";
+        selectedTableId = null;
+        document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
+        await Promise.all([refreshBookings(), refreshAvailability()]);
+      } catch (error) {
+        showMessage(error.message, "error");
+        await refreshAvailability();
+      } finally {
+        submitButton.textContent = "Bandlovni tasdiqlash";
+        submitButton.disabled = !selectedTableId;
+      }
+    });
+
+    [dateInput, timeInput, partyInput, durationInput].forEach((input) => input.addEventListener("change", scheduleAvailabilityRefresh));
+    dateInput.addEventListener("change", refreshBookings);
+    setInitialDateTime();
+    window.initRoomScene?.(selectTable);
+    Promise.all([refreshAvailability(), refreshBookings()]);
+  </script>
+</body>
+</html>

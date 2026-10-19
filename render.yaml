@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: sofra-booking
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn kursishi:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: bookings-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: APP_ENV
+        value: production
+      - key: APP_USERNAME
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: BOOKING_DB_PATH
+        value: /var/data/bookings.db
