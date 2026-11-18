@@ -4,17 +4,36 @@ from datetime import date, datetime, time, timedelta
 import os
 from pathlib import Path
 import re
-from secrets import compare_digest
+from secrets import compare_digest, token_urlsafe
 import sqlite3
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 
 DATABASE_PATH = Path(os.getenv("BOOKING_DB_PATH", Path(__file__).with_name("bookings.db")))
+ADMIN_SESSION_COOKIE = "sofra_admin_session"
+ADMIN_SESSION_DURATION = timedelta(hours=8)
+ADMIN_SESSIONS: dict[str, datetime] = {}
+
+
+def load_local_admin_code():
+	if os.getenv("ADMIN_ACCESS_CODE") is not None:
+		return
+	local_env = Path(__file__).with_name(".env")
+	if not local_env.is_file():
+		return
+	for line in local_env.read_text(encoding="utf-8").splitlines():
+		key, separator, value = line.partition("=")
+		if separator and key.strip() == "ADMIN_ACCESS_CODE":
+			os.environ["ADMIN_ACCESS_CODE"] = value.strip().strip("\"'")
+			return
+
+
+load_local_admin_code()
 
 
 def get_connection():
@@ -63,9 +82,9 @@ def initialize_database():
 @asynccontextmanager
 async def lifespan(_: FastAPI):
 	if os.getenv("APP_ENV") == "production" and not (
-		os.getenv("APP_USERNAME") and os.getenv("APP_PASSWORD")
+		os.getenv("APP_USERNAME") and os.getenv("APP_PASSWORD") and os.getenv("ADMIN_ACCESS_CODE")
 	):
-		raise RuntimeError("APP_USERNAME and APP_PASSWORD are required in production")
+		raise RuntimeError("APP_USERNAME, APP_PASSWORD, and ADMIN_ACCESS_CODE are required in production")
 	initialize_database()
 	yield
 
@@ -87,6 +106,32 @@ app.add_middleware(
 
 @app.middleware("http")
 async def require_admin(request: Request, call_next):
+	path = request.url.path
+	is_admin_path = path == "/admin" or path.startswith("/admin/")
+	if is_admin_path:
+		if (path == "/admin/api" or path.startswith("/admin/api/")) and not has_admin_session(request):
+			return JSONResponse(
+				status_code=401,
+				content={"detail": "Admin paneliga kirish uchun kodni kiriting"},
+				headers={"Cache-Control": "no-store"},
+			)
+		response = await call_next(request)
+		response.headers["Cache-Control"] = "no-store"
+		return response
+
+	is_admin_data = (
+		(path == "/bookings" and request.method == "GET")
+		or (path.startswith("/bookings/") and request.method in {"GET", "PATCH", "DELETE"})
+		or (path == "/tables" and request.method == "POST")
+		or (path.startswith("/tables/") and request.method in {"PATCH", "DELETE"})
+	)
+	if is_admin_data and not has_admin_session(request):
+		return JSONResponse(
+			status_code=401,
+			content={"detail": "Admin paneliga kirish uchun kodni kiriting"},
+			headers={"Cache-Control": "no-store"},
+		)
+
 	username = os.getenv("APP_USERNAME")
 	password = os.getenv("APP_PASSWORD")
 	if username is None and password is None:
@@ -111,6 +156,17 @@ async def require_admin(request: Request, call_next):
 	return await call_next(request)
 
 
+def has_admin_session(request: Request) -> bool:
+	token = request.cookies.get(ADMIN_SESSION_COOKIE)
+	expires_at = ADMIN_SESSIONS.get(token) if token else None
+	if expires_at is None:
+		return False
+	if expires_at <= datetime.now():
+		ADMIN_SESSIONS.pop(token, None)
+		return False
+	return True
+
+
 def database():
 	connection = get_connection()
 	try:
@@ -133,6 +189,10 @@ class TableCreate(BaseModel):
 		if not value:
 			raise ValueError("Stol nomi bo‘sh bo‘lmasligi kerak")
 		return value
+
+
+class AdminLogin(BaseModel):
+	access_code: str = Field(min_length=1, max_length=256)
 
 
 class TableUpdate(BaseModel):
@@ -274,14 +334,76 @@ def home():
 	return FileResponse(Path(__file__).with_name("index.html"))
 
 
+@app.get("/admin", include_in_schema=False)
+def admin():
+	return FileResponse(Path(__file__).with_name("admin.html"))
+
+
+@app.get("/admin/session", include_in_schema=False)
+def admin_session(request: Request):
+	return {"authenticated": has_admin_session(request)}
+
+
+@app.post("/admin/login", include_in_schema=False)
+def admin_login(credentials: AdminLogin, request: Request, response: Response):
+	load_local_admin_code()
+	access_code = os.getenv("ADMIN_ACCESS_CODE")
+	if not access_code:
+		raise HTTPException(status_code=503, detail="Admin kirish kodi serverda sozlanmagan")
+	if not compare_digest(credentials.access_code, access_code):
+		raise HTTPException(status_code=401, detail="Kirish kodi noto‘g‘ri")
+
+	now = datetime.now()
+	for token, expires_at in list(ADMIN_SESSIONS.items()):
+		if expires_at <= now:
+			ADMIN_SESSIONS.pop(token, None)
+	token = token_urlsafe(32)
+	ADMIN_SESSIONS[token] = now + ADMIN_SESSION_DURATION
+	response.set_cookie(
+		key=ADMIN_SESSION_COOKIE,
+		value=token,
+		max_age=int(ADMIN_SESSION_DURATION.total_seconds()),
+		httponly=True,
+		secure=os.getenv("APP_ENV") == "production" or request.url.scheme == "https",
+		samesite="strict",
+		path="/admin",
+	)
+	return {"authenticated": True}
+
+
+@app.post("/admin/logout", include_in_schema=False)
+def admin_logout(request: Request, response: Response):
+	token = request.cookies.get(ADMIN_SESSION_COOKIE)
+	if token:
+		ADMIN_SESSIONS.pop(token, None)
+	response.delete_cookie(
+		key=ADMIN_SESSION_COOKIE,
+		httponly=True,
+		secure=os.getenv("APP_ENV") == "production" or request.url.scheme == "https",
+		samesite="strict",
+		path="/admin",
+	)
+	return {"authenticated": False}
+
+
 @app.get("/styles.css", include_in_schema=False)
 def stylesheet():
 	return FileResponse(Path(__file__).with_name("styles.css"), media_type="text/css")
 
 
+@app.get("/admin.css", include_in_schema=False)
+def admin_stylesheet():
+	return FileResponse(Path(__file__).with_name("admin.css"), media_type="text/css")
+
+
 @app.get("/room.js", include_in_schema=False)
 def room_script():
 	return FileResponse(Path(__file__).with_name("room.js"), media_type="text/javascript")
+
+
+@app.get("/admin.js", include_in_schema=False)
+def admin_script():
+	return FileResponse(Path(__file__).with_name("admin.js"), media_type="text/javascript")
 
 
 @app.get("/tables")
@@ -579,6 +701,18 @@ def cancel_booking(booking_id: int, connection: Database):
 			raise HTTPException(status_code=409, detail="Bron avval bekor qilingan")
 		raise HTTPException(status_code=404, detail="Bron topilmadi")
 	return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+for path, endpoint, methods in (
+	("/admin/api/tables", list_tables, ["GET"]),
+	("/admin/api/tables", create_table, ["POST"]),
+	("/admin/api/tables/{table_id}", update_table, ["PATCH"]),
+	("/admin/api/tables/{table_id}", delete_table, ["DELETE"]),
+	("/admin/api/bookings", list_bookings, ["GET"]),
+	("/admin/api/bookings/{booking_id}", update_booking, ["PATCH"]),
+	("/admin/api/bookings/{booking_id}", cancel_booking, ["DELETE"]),
+):
+	app.add_api_route(path, endpoint, methods=methods, include_in_schema=False)
 
 
 if __name__ == "__main__":

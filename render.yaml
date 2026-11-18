@@ -18,5 +18,7 @@ services:
         sync: false
       - key: APP_PASSWORD
         sync: false
+      - key: ADMIN_ACCESS_CODE
+        sync: false
       - key: BOOKING_DB_PATH
         value: /var/data/bookings.db

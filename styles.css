@@ -38,6 +38,8 @@ button { color: inherit; }
 .brand-name { font: 800 19px Manrope, sans-serif; letter-spacing: .3px; }
 .brand-caption { margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
 .top-actions { display: flex; align-items: center; gap: 12px; }
+.admin-link { padding: 9px 12px; border: 1px solid var(--green); border-radius: 7px; background: var(--green); color: #fff; text-decoration: none; font-size: 11px; font-weight: 700; transition: background .15s, transform .15s; }
+.admin-link:hover { transform: translateY(-1px); border-color: #1f402f; background: #1f402f; }
 .connection { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: #5d9b63; box-shadow: 0 0 0 4px #e5f0e2; }
 .user-badge { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #dce3d9; border-radius: 50%; background: #fff; color: var(--green); font-size: 12px; font-weight: 700; }

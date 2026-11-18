@@ -18,6 +18,7 @@
         <span><span class="brand-name">SOFRA</span><span class="brand-caption">RESTORAN BOSHQARUVI</span></span>
       </a>
       <div class="top-actions">
+        <a class="admin-link" href="/admin">Admin paneli</a>
         <span class="connection"><span class="connection-dot"></span>Tizim faol</span>
         <span class="user-badge" aria-label="Administrator">SA</span>
       </div>
@@ -25,33 +26,11 @@
 
     <section id="top" class="page-heading">
       <div>
-        <p class="eyebrow">Boshqaruv paneli</p>
-        <h1>Stollar va bandlovlar</h1>
-        <p class="heading-note">Restorandagi bandlovlarni shu yerdan boshqaring.</p>
+        <p class="eyebrow">SOFRA · ONLAYN BANDLOV</p>
+        <h1>Stol band qilish</h1>
+        <p class="heading-note">Sana va mehmonlar sonini tanlab, bo‘sh stolni band qiling.</p>
       </div>
       <div class="today-label" id="today-label">Bugun</div>
-    </section>
-
-    <section class="overview" aria-label="Kunlik ko‘rsatkichlar">
-      <div class="metric" style="--metric-color:#284f3b">
-        <div class="metric-label">Faol bandlovlar</div>
-        <div class="metric-value"><span id="metric-bookings" class="skeleton">—</span><span class="metric-unit">ta</span></div>
-      </div>
-      <div class="metric" style="--metric-color:#a4c64d">
-        <div class="metric-label">Bo‘sh stollar</div>
-        <div class="metric-value"><span id="metric-tables" class="skeleton">—</span><span class="metric-unit">ta</span></div>
-      </div>
-      <div class="metric" style="--metric-color:#59788d">
-        <div class="metric-label">Kutilayotgan mehmonlar</div>
-        <div class="metric-value"><span id="metric-guests" class="skeleton">—</span><span class="metric-unit">kishi</span></div>
-      </div>
-      <div class="photo-note">
-        <span class="spark" aria-hidden="true">✳</span>
-        <div class="photo-note-copy">
-          <p class="photo-note-title">Bugungi xizmat</p>
-          <p class="photo-note-subtitle" id="service-date">Yangi kun, yangi mehmonlar.</p>
-        </div>
-      </div>
     </section>
 
     <section class="workspace">
@@ -100,15 +79,7 @@
       </aside>
     </section>
 
-    <section class="bookings-section" id="bookings" aria-labelledby="bookings-heading">
-      <div class="bookings-header">
-        <div><h2 id="bookings-heading">Bandlovlar ro‘yxati</h2><p id="booking-count-label">Tanlangan sana bo‘yicha bandlovlar</p></div>
-        <span class="date-chip" id="list-date-chip">—</span>
-      </div>
-      <div id="booking-list" class="booking-list" aria-live="polite"><div class="list-empty">Bandlovlar yuklanmoqda...</div></div>
-    </section>
-
-    <footer class="footer"><span>SOFRA · Restoran boshqaruvi</span><span>Bandlovlar xavfsiz saqlanadi</span></footer>
+    <footer class="footer"><span>SOFRA · Onlayn bandlov</span><span>Bronlar boshqaruvi faqat administrator uchun.</span></footer>
   </main>
 
   <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
@@ -119,7 +90,6 @@
     const partyInput = document.querySelector("#party-size");
     const durationInput = document.querySelector("#duration");
     const tableGrid = document.querySelector("#table-grid");
-    const bookingList = document.querySelector("#booking-list");
     const form = document.querySelector("#booking-form");
     const submitButton = document.querySelector("#submit-booking");
     const message = document.querySelector("#form-message");
@@ -156,7 +126,6 @@
       timeInput.value = `${String(initial.getHours()).padStart(2, "0")}:${String(initial.getMinutes()).padStart(2, "0")}`;
       dateInput.min = dateInput.value;
       document.querySelector("#today-label").textContent = `Bugun · ${dateString(dateInput.value, true)}`;
-      document.querySelector("#service-date").textContent = `${dateString(dateInput.value)} uchun bandlovlar`;
     }
 
     async function api(path, options = {}) {
@@ -246,8 +215,6 @@
           submitButton.disabled = true;
         }
         renderTables(availability.tables);
-        document.querySelector("#metric-tables").textContent = availability.tables.length;
-        document.querySelector("#metric-tables").classList.remove("skeleton");
       } catch (error) {
         window.setRoomStatus?.(error.message);
         tableGrid.innerHTML = `<div class="empty-tables">${escapeHtml(error.message)}</div>`;
@@ -262,58 +229,6 @@
         submitButton.disabled = true;
         await refreshAvailability();
       }, 180);
-    }
-
-    async function refreshBookings() {
-      const selectedDate = dateInput.value;
-      document.querySelector("#list-date-chip").textContent = dateString(selectedDate);
-      document.querySelector("#service-date").textContent = `${dateString(selectedDate)} uchun bandlovlar`;
-      try {
-        const dayBookings = await api(`/bookings?booking_date=${encodeURIComponent(selectedDate)}`);
-        const activeToday = dayBookings.filter((booking) => booking.status === "confirmed");
-        document.querySelector("#metric-bookings").textContent = activeToday.length;
-        document.querySelector("#metric-bookings").classList.remove("skeleton");
-        document.querySelector("#metric-guests").textContent = activeToday.reduce((total, booking) => total + booking.party_size, 0);
-        document.querySelector("#metric-guests").classList.remove("skeleton");
-        document.querySelector("#booking-count-label").textContent = `${dayBookings.length} ta bandlov · ${activeToday.length} tasi faol`;
-        renderBookings(dayBookings);
-      } catch (error) {
-        bookingList.innerHTML = `<div class="list-empty">${escapeHtml(error.message)}</div>`;
-      }
-    }
-
-    function renderBookings(bookings) {
-      if (!bookings.length) {
-        bookingList.innerHTML = '<div class="list-empty">Bu sana uchun bandlovlar yo‘q.</div>';
-        return;
-      }
-      bookingList.innerHTML = bookings.map((booking) => {
-        const cancelled = booking.status === "cancelled";
-        return `<article class="booking-row">
-          <span class="booking-table">${escapeHtml(booking.table_name)}</span>
-          <span class="booking-person"><strong>${escapeHtml(booking.customer_name)}</strong><small class="booking-phone">${escapeHtml(booking.phone)}</small></span>
-          <span><strong class="booking-time">${escapeHtml(booking.start_time.slice(0, 5))}</strong><small class="booking-detail">${escapeHtml(booking.end_time.slice(0, 5))} gacha</small></span>
-          <span class="booking-detail booking-size">${booking.party_size} mehmon</span>
-          <span class="status-pill ${cancelled ? "cancelled" : ""}">${cancelled ? "Bekor qilingan" : "Tasdiqlangan"}</span>
-          <button class="cancel-button" type="button" data-cancel-id="${booking.id}" ${cancelled ? "disabled" : ""}>Bekor qilish</button>
-        </article>`;
-      }).join("");
-      bookingList.querySelectorAll("[data-cancel-id]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          if (!confirm("Ushbu bandlovni bekor qilmoqchimisiz?")) return;
-          button.disabled = true;
-          try {
-            await api(`/bookings/${button.dataset.cancelId}`, { method: "DELETE" });
-            selectedTableId = null;
-            document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
-            submitButton.disabled = true;
-            await Promise.all([refreshBookings(), refreshAvailability()]);
-          } catch (error) {
-            button.disabled = false;
-            showMessage(error.message, "error");
-          }
-        });
-      });
     }
 
     form.addEventListener("submit", async (event) => {
@@ -339,7 +254,7 @@
         document.querySelector("#phone").value = "";
         selectedTableId = null;
         document.querySelector("#selected-table-label").textContent = "Stol tanlanmagan";
-        await Promise.all([refreshBookings(), refreshAvailability()]);
+        await refreshAvailability();
       } catch (error) {
         showMessage(error.message, "error");
         await refreshAvailability();
@@ -348,12 +263,11 @@
         submitButton.disabled = !selectedTableId;
       }
     });
-
     [dateInput, timeInput, partyInput, durationInput].forEach((input) => input.addEventListener("change", scheduleAvailabilityRefresh));
-    dateInput.addEventListener("change", refreshBookings);
+    [dateInput, timeInput, partyInput, durationInput].forEach((input) => input.addEventListener("change", scheduleAvailabilityRefresh));
     setInitialDateTime();
     window.initRoomScene?.(selectTable);
-    Promise.all([refreshAvailability(), refreshBookings()]);
+    refreshAvailability();
   </script>
 </body>
 </html>

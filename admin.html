@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f0">
+  <title>Sofra | Admin paneli</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Sofra bosh sahifa">
+        <span class="brand-mark">S</span>
+        <span><span class="brand-name">SOFRA</span><span class="brand-caption">ADMIN PANELI</span></span>
+      </a>
+      <div class="top-actions">
+        <button id="logout-button" class="secondary-button logout-button" type="button" hidden>Chiqish</button>
+        <a class="back-link" href="/">← Saytga qaytish</a>
+      </div>
+    </header>
+
+    <section id="login-screen" class="login-layout" aria-labelledby="login-heading">
+      <div class="login-story">
+        <span class="story-mark" aria-hidden="true">S</span>
+        <p class="story-kicker">SOFRA · MEHMONDO‘STLIK</p>
+        <h1>Yaxshi xizmat<br>e’tibordan boshlanadi.</h1>
+        <p class="story-note">Bronlar va restoran boshqaruvi — faqat mas’ul xodimlar uchun.</p>
+        <div class="story-decoration" aria-hidden="true"><span></span><span></span><span></span></div>
+        <span class="story-footnote">XAVFSIZ · MAXFIY · SOFRA</span>
+      </div>
+      <div class="login-card">
+        <p class="eyebrow">Xush kelibsiz</p>
+        <h2 id="login-heading">Admin paneliga kirish</h2>
+        <p class="login-description">Davom etish uchun admin kirish kodini kiriting.</p>
+        <form id="login-form">
+          <label class="field" for="access-code">Kirish kodi
+            <input id="access-code" name="access_code" type="password" placeholder="Kodingizni kiriting" autocomplete="current-password" maxlength="256" required>
+          </label>
+          <button id="login-button" class="primary-button login-submit" type="submit"><span>Kirish</span><span aria-hidden="true">→</span></button>
+          <p id="login-message" class="login-message" role="alert" aria-live="polite"></p>
+        </form>
+        <p class="login-hint"><span class="lock-icon" aria-hidden="true">◆</span> Himoyalangan admin hududi</p>
+      </div>
+    </section>
+
+    <div id="admin-dashboard" hidden>
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Restoran boshqaruvi</p>
+        <h1>Admin paneli</h1>
+        <p class="heading-note">Bronlar va restoran stollarini boshqaring.</p>
+      </div>
+      <button id="refresh-button" class="secondary-button" type="button">Yangilash</button>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+    <section class="overview" aria-label="Umumiy ko‘rsatkichlar">
+      <article class="metric"><span class="metric-label">Ko‘rsatilgan bronlar</span><strong id="metric-bookings">—</strong></article>
+      <article class="metric"><span class="metric-label">Faol bronlar</span><strong id="metric-active">—</strong></article>
+      <article class="metric"><span class="metric-label">Mehmonlar</span><strong id="metric-guests">—</strong></article>
+      <article class="metric"><span class="metric-label">Jami stollar</span><strong id="metric-tables">—</strong></article>
+    </section>
+
+    <section class="panel" aria-labelledby="bookings-heading">
+      <div class="section-head">
+        <div><h2 id="bookings-heading">Bronlarni boshqarish</h2><p>Sana va holat bo‘yicha filtrlash mumkin.</p></div>
+      </div>
+      <form id="filters" class="filters">
+        <label class="field">Sana
+          <input id="filter-date" type="date">
+        </label>
+        <label class="field">Holati
+          <select id="filter-status">
+            <option value="">Barcha holatlar</option>
+            <option value="confirmed">Faol</option>
+            <option value="cancelled">Bekor qilingan</option>
+          </select>
+        </label>
+        <button class="primary-button filter-button" type="submit">Qidirish</button>
+        <button id="clear-date" class="secondary-button filter-button" type="button">Barcha sanalar</button>
+      </form>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Sana / vaqt</th><th>Mehmon</th><th>Stol</th><th>Mehmonlar</th><th>Holati</th><th>Amallar</th></tr></thead>
+          <tbody id="booking-rows"><tr><td class="empty-cell" colspan="6">Bronlar yuklanmoqda...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="tables-heading">
+      <div class="section-head">
+        <div><h2 id="tables-heading">Stollar</h2><p>Stol sig‘imini boshqaring yoki yangi stol qo‘shing.</p></div>
+        <button id="add-table" class="primary-button" type="button">+ Stol qo‘shish</button>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Stol</th><th>Sig‘imi</th><th>Amallar</th></tr></thead>
+          <tbody id="table-rows"><tr><td class="empty-cell" colspan="3">Stollar yuklanmoqda...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <dialog id="booking-dialog" class="edit-dialog">
+      <form id="booking-edit-form">
+        <div class="dialog-heading"><div><p class="eyebrow">Bron ma’lumotlari</p><h2>Bronni tahrirlash</h2></div><button class="icon-button" type="button" data-close="booking-dialog" aria-label="Yopish">×</button></div>
+        <input id="edit-booking-id" type="hidden">
+        <label class="field">Mehmon ismi<input id="edit-customer-name" required minlength="2" maxlength="100"></label>
+        <label class="field">Telefon<input id="edit-phone" type="tel" required minlength="7" maxlength="25"></label>
+        <div class="form-pair">
+          <label class="field">Sana<input id="edit-booking-date" type="date" required></label>
+          <label class="field">Vaqt<input id="edit-start-time" type="time" required></label>
+        </div>
+        <div class="form-pair">
+          <label class="field">Mehmonlar soni<input id="edit-party-size" type="number" min="1" max="30" required></label>
+          <label class="field">Davomiyligi
+            <select id="edit-duration">
+              <option value="30">30 daqiqa</option><option value="60">1 soat</option><option value="90">1,5 soat</option><option value="120">2 soat</option><option value="180">3 soat</option><option value="240">4 soat</option><option value="300">5 soat</option><option value="360">6 soat</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">Stol<select id="edit-table-id" required></select></label>
+        <div class="dialog-actions"><button class="secondary-button" type="button" data-close="booking-dialog">Bekor qilish</button><button class="primary-button" type="submit">Saqlash</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="table-dialog" class="edit-dialog">
+      <form id="table-edit-form">
+        <div class="dialog-heading"><div><p class="eyebrow">Stol ma’lumotlari</p><h2 id="table-dialog-title">Stol qo‘shish</h2></div><button class="icon-button" type="button" data-close="table-dialog" aria-label="Yopish">×</button></div>
+        <input id="edit-table-id" type="hidden">
+        <label class="field">Stol nomi<input id="edit-table-name" required maxlength="30" placeholder="Masalan, T7"></label>
+        <label class="field">O‘rinlar soni<input id="edit-table-seats" type="number" min="1" max="30" required></label>
+        <div class="dialog-actions"><button class="secondary-button" type="button" data-close="table-dialog">Bekor qilish</button><button class="primary-button" type="submit">Saqlash</button></div>
+      </form>
+    </dialog>
+    <footer class="footer">SOFRA · Restoran boshqaruvi</footer>
+  </main>
+  <script src="/admin.js" defer></script>
+</body>
+</html>
